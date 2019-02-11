@@ -94,42 +94,95 @@
     </div>
   </section>
 
-  <!-- todo: add sections as necessary -->
-  <section class="section" id="vis_1">
+  <!-- separator between sections -->
+  <hr class="container">
+
+  <!-- grade section -->
+  <section class="section">
     <div class="container content">
-      <!-- todo: modify as necessary (or move visualizations to separate pages) -->
-      <h2 id="vis1">Visualization 1</h2>
+      <h2 id="grade">
+        Expected Grade
+      </h2>
 
-      <script src="vis_1.js"></script>
+      <!-- todo: modify to indicate your expected grade -->
+      <table class="table is-hoverable">
+        <thead>
+          <tr>
+            <th>Done?</th>
+            <th>Letter</th>
+            <th>Justification</th>
+          </tr>
+        </thead>
 
-      <svg width="100%" height="400" style="background-color: whitesmoke; border: 1px solid black;"></svg>
+        <tbody>
+          <!-- d level functionality -->
+          <tr>
+            <td class="has-text-centered">
+              <i class="far fa-fw fa-check-circle has-text-success"></i>
+            </td>
 
-      <script type="text/javascript">
-        drawBarChart();
-      </script>
+            <td class="has-text-centered">
+              D
+            </td>
 
-      <h3>Interpretation</h3>
+            <td>
+              If appropriate, provide a brief justification for this level of functionality. Clearly state if this level was not implemented.
+            </td>
+          </tr>
+
+          <!-- c level functionality -->
+          <tr>
+            <td class="has-text-centered">
+              <i class="far fa-fw fa-check-circle has-text-success"></i>
+            </td>
+
+            <td class="has-text-centered">
+              C
+            </td>
+
+            <td>
+              If appropriate, provide a brief justification for this level of functionality. Clearly state if this level was not implemented.
+            </td>
+          </tr>
+
+          <!-- b level functionality -->
+          <tr>
+            <td class="has-text-centered">
+              <i class="far fa-fw fa-times-circle has-text-danger"></i>
+            </td>
+
+            <td class="has-text-centered">
+              B
+            </td>
+
+            <td>
+              If appropriate, provide a brief justification for this level of functionality. Clearly state if this level was not implemented.
+            </td>
+          </tr>
+
+
+          <!-- a level functionality -->
+          <tr>
+            <td class="has-text-centered">
+              <i class="far fa-fw fa-times-circle has-text-danger"></i>
+            </td>
+
+            <td class="has-text-centered">
+              A
+            </td>
+
+            <td>
+              If appropriate, provide a brief justification for this level of functionality. Clearly state if this level was not implemented.
+            </td>
+          </tr>
+        <tbody>
+      </table>
 
       <p>
-        If appropriate, provide a brief discussion of how to interpret this visualization (e.g. how the data is encoded) and how to interact with this visualization. Some of this discussion may not be necessary depending on the legends provided with the visualization.
-      </p>
-
-      <h3>Discussion</h3>
-
-      <p>
-        If appropriate, provide a brief discussion of the primary goal and findings of the visualization, any challenges encountered creating the visualization, and any other context as required by the assignment.
-      </p>
-
-      <h3>Credit</h3>
-
-      <p>
-        If appropriate, provide credit for the dataset, any code used, and design inspirations here. Unsufficient discussion here is a violation of the <a href="/syllabus.html#cheating-policy">academic honesty policy</a> and may result in an F grade for the assignment or the <em>entire</em> course.
+        Any additional context you want to provide regarding functionality and grading can be included here. This may include any challenges or bugs you ran into that prevented you from implementing additional functionality.
       </p>
     </div>
   </section>
-
-  <!-- separator between sections -->
-  <hr class="container">
 
   <!-- about section -->
   <!-- todo: can fill in, or link to an about page you use for all assignments -->
