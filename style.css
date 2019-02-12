@@ -1,0 +1,33 @@
+
+#x-axis text,
+#y-axis text {
+  font-size: 9pt;
+  fill: #888888;
+}
+
+#x-axis line {
+  /* tick marks */
+  fill: none;
+  stroke: none;
+}
+
+#x-axis path,
+#y-axis path,
+#y-axis line {
+  fill: none;
+
+  stroke: #bbbbbb;
+  stroke-width: 1px;
+}
+
+#x-axis-title text,
+#y-axis-title text {
+  font-size: 14pt;
+  font-weight: bold;
+}
+
+#graph-title text {
+  font-size: 25pt;
+  font-weight: bold;
+  text-align: middle;
+}

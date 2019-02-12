@@ -1,48 +1,37 @@
-/*
- * our massive function to draw a bar chart. note some stuff in here
- * is bonus material (for transitions and updating the text)
- */
-var drawBarChart = function() {
-  // get the data to visualize
-  let letters = "abcdefghijklmnopqrstuvwxyz".split("");
+
+var processData = function(data) {
   let count = d3.map();
 
-  for (letter in letters) {
-    count.set(letter, 2);
+  for (row in data) {
+    var neighborhood = data[row]["Analysis Neighborhood"];
+
+    // check if we have seen this letter before
+    if (count.has(neighborhood)) {
+      count.set(neighborhood, count.get(neighborhood) + 1);
+    }
+    else {
+      count.set(neighborhood, 1);
+    }
   }
 
-  // get the svg to draw on
+  return count;
+};
+
+var drawScatterPlot = function(data) {
+  let processed = processData(data);
+  processed.remove(""); // get rid of null neighborhoods
+  processed.remove("undefined"); // get rid of undefined neighborhoods
+
   let svg = d3.select("body").select("svg");
-  console.log("SVGG");
-  console.log(svg.style("width"));
 
-  /*
-   * we will need to map our data domain to our svg range, which
-   * means we need to calculate the min and max of our data
-   */
+  let countMin = 0;
+  let countMax = d3.max(processed.values());
 
-  let countMin = 0; // always include 0 in a bar chart!
-  let countMax = d3.max(count.values());
-
-  // this catches the case where all the bars are removed, so there
-  // is no maximum value to compute
-  if (isNaN(countMax)) {
-    countMax = 0;
-  }
-
-  // console.log("count bounds:", [countMin, countMax]);
-
-  /*
-   * before we draw, we should decide what kind of margins we
-   * want. this will be the space around the core plot area,
-   * where the tick marks and axis labels will be placed
-   * http://bl.ocks.org/mbostock/3019563
-   */
   let margin = {
-    top:    15,
-    right:  35, // leave space for y-axis
-    bottom: 30, // leave space for x-axis
-    left:   10
+    top:    70,
+    right:  15, // leave space for y-axis
+    bottom: 50, // leave space for x-axis
+    left:   180
   };
 
   // now we can calculate how much space we have to plot
@@ -50,15 +39,24 @@ var drawBarChart = function() {
   let plotWidth = bounds.width - margin.right - margin.left;
   let plotHeight = bounds.height - margin.top - margin.bottom;
 
-  let countScale = d3.scaleLinear()
+  let numberScale = d3.scaleLinear()
     .domain([countMin, countMax])
-    .range([plotHeight, 0])
+    .rangeRound([0, plotWidth-margin.right])
     .nice(); // rounds the domain a bit for nicer output
 
-  let letterScale = d3.scaleBand()
-    .domain(letters) // all letters (not using the count here)
-    .rangeRound([0, plotWidth])
-    .paddingInner(0.1); // space between bars
+  let sortedNeighbors = processed.entries().sort(function(x, y) {
+    return d3.descending(x.value, y.value)
+  });
+  let dataPoints = [];
+  for (let i = 0; i<sortedNeighbors.length; i++) {
+    dataPoints.push([sortedNeighbors[i].key, sortedNeighbors[i].value]);
+  };
+  sortedNeighbors = d3.map(sortedNeighbors, function(d) {return d.key; });
+
+  let neighborhoodScale = d3.scaleBand()
+    .domain(sortedNeighbors.keys())
+    .range([0, plotHeight])
+    .paddingInner(5);
 
   let plot = svg.select("g#plot");
 
@@ -74,10 +72,8 @@ var drawBarChart = function() {
     plot.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
   }
 
-  // now lets draw our x- and y-axis
-  // these require our x (letter) and y (count) scales
-  let xAxis = d3.axisBottom(letterScale);
-  let yAxis = d3.axisRight(countScale);
+  let xAxis = d3.axisBottom(numberScale);
+  let yAxis = d3.axisLeft(neighborhoodScale);
 
   // check if we have already drawn our axes
   if (plot.select("g#y-axis").size() < 1) {
@@ -93,7 +89,7 @@ var drawBarChart = function() {
     // do the same for our y axix
     let yGroup = plot.append("g").attr("id", "y-axis");
     yGroup.call(yAxis);
-    yGroup.attr("transform", "translate(" + plotWidth + ",0)");
+    yGroup.attr("transform", "translate(0,0)");
   }
   else {
     // we need to do this so our chart updates
@@ -101,69 +97,54 @@ var drawBarChart = function() {
     plot.select("g#y-axis").call(yAxis);
   }
 
-  // now how about some bars!
-  /*
-   * time to bind each data element to a rectangle in our visualization
-   * hence the name data-driven documents (d3)
-   */
-  let bars = plot.selectAll("rect")
-    .data(count.entries(), function(d) { return d.key; });
+  var gridlines = d3.axisBottom(numberScale)
+    .tickFormat("")
+    .tickSize(-plotHeight);
 
-  // setting the "key" is important... this is how d3 will tell
-  // what is existing data, new data, or old data
+  plot.append("g")
+     .call(gridlines)
+     .attr("transform", "translate(0," + plotHeight + ")")
+     .attr("color", "#E2E2E2");
 
-  /*
-   * okay, this is where things get weird. d3 uses an enter, update,
-   * exit pattern for dealing with data. think of it as new data,
-   * existing data, and old data. for the first time, everything is new!
-   * http://bost.ocks.org/mike/join/
-   */
-  // we use the enter() selection to add new bars for new data
-  bars.enter().append("rect")
-    // we will style using css
-    .attr("class", "bar")
-    // the width of our bar is determined by our band scale
-    .attr("width", letterScale.bandwidth())
-    // we must now map our letter to an x pixel position
-    .attr("x", function(d) {
-      return letterScale(d.key);
-    })
-    // and do something similar for our y pixel position
-    .attr("y", function(d) {
-      return countScale(d.value);
-    })
-    // here it gets weird again, how do we set the bar height?
-    .attr("height", function(d) {
-      return plotHeight - countScale(d.value);
-    })
-    .each(function(d, i, nodes) {
-      console.log("Added bar for:", d.key);
-    });
+  svg.selectAll("circle")
+		.data(dataPoints)
+		.enter()
+		.append("circle")
+		.attr("cx", function(d) {
+			return margin.left + numberScale(d[1]);
+		})
+		.attr("cy", function(d) {
+			return margin.top + neighborhoodScale(d[0]);
+		})
+		.attr("r", 2)
+		.attr("fill", "blue");
 
-  // notice there will not be bars created for missing letters!
+  svg.append("text")
+    // .attr("id", "graph-title")
+    .style("font-size", "25")
+    .attr("y", margin.top/2)
+    .attr("x", 10)
+    .style("text-anchor", "start")
+    .text("Neighborhoods by Number of Incidents");
 
-  // so what happens when we change the text?
-  // well our data changed, and there will be a new enter selection!
-  // only new letters will get new bars
+  plot.append("text")
+    // .attr("id", "x-axis-title")
+    .style("font-size", "14")
+    .style("font-weight", "bold")
+    .attr("transform",
+        "translate(" + (plotWidth/2) + " ,"
+        + (plotHeight + 40) + ")")
+    .style("text-anchor", "middle")
+    .text("Total Number of Incidents");
 
-  // but we have to bind this draw function to textarea events
-  // (see index.html)
+  plot.append("text")
+    // .attr("id", "y-axis-title")
+    .style("font-size", "14")
+    .style("font-weight", "bold")
+    .attr("y", -24)
+    .attr("x", 0)
+    .attr("dy", "1em")
+    .style("text-anchor", "end")
+    .text("Analysis Neighborhood");
 
-  // for bars that already existed, we must use the update selection
-  // and then update their height accordingly
-  // we use transitions for this to avoid change blindness
-  bars.transition()
-    .attr("y", function(d) { return countScale(d.value); })
-    .attr("height", function(d) { return plotHeight - countScale(d.value); });
-
-  // what about letters that disappeared?
-  // we use the exit selection for those to remove the bars
-  bars.exit()
-    .each(function(d, i, nodes) {
-      console.log("Removing bar for:", d.key);
-    })
-    .transition()
-    .attr("y", function(d) { return countScale(countMin); })
-    .attr("height", function(d) { return plotHeight - countScale(countMin); })
-    .remove();
 };
