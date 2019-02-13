@@ -1,48 +1,45 @@
-/*
- * our massive function to draw a bar chart. note some stuff in here
- * is bonus material (for transitions and updating the text)
- */
-var drawBarChart = function() {
-  // get the data to visualize
-  let letters = "abcdefghijklmnopqrstuvwxyz".split("");
+
+var processData = function(data) {
   let count = d3.map();
 
-  for (letter in letters) {
-    count.set(letter, 2);
+  for (row in data) {
+    let time = data[row]["Incident Time"];
+
+    if (time) {
+      time = parseInt(time.slice(0,2));
+
+      if (count.has(time)) {
+        count.set(time, count.get(time) + 1);
+      }
+      else {
+        count.set(time, 1);
+      }
+    }
   }
 
-  // get the svg to draw on
+  return count;
+};
+
+var drawScatterPlot = function(data) {
+  let processed = processData(data);
+  let sortedPoints = processed.keys().sort(function(x, y) {
+    return d3.ascending(parseInt(x), parseInt(y))
+  });
+  let dataPoints = [];
+  for (let i = 0; i<sortedPoints.length; i++) {
+    dataPoints.push({ "x": i, "y": processed.get(i)});
+  };
+
   let svg = d3.select("body").select("svg");
-  console.log("SVGG");
-  console.log(svg.style("width"));
 
-  /*
-   * we will need to map our data domain to our svg range, which
-   * means we need to calculate the min and max of our data
-   */
+  let countMin = 0;
+  let countMax = d3.max(processed.values());
 
-  let countMin = 0; // always include 0 in a bar chart!
-  let countMax = d3.max(count.values());
-
-  // this catches the case where all the bars are removed, so there
-  // is no maximum value to compute
-  if (isNaN(countMax)) {
-    countMax = 0;
-  }
-
-  // console.log("count bounds:", [countMin, countMax]);
-
-  /*
-   * before we draw, we should decide what kind of margins we
-   * want. this will be the space around the core plot area,
-   * where the tick marks and axis labels will be placed
-   * http://bl.ocks.org/mbostock/3019563
-   */
   let margin = {
-    top:    15,
-    right:  35, // leave space for y-axis
-    bottom: 30, // leave space for x-axis
-    left:   10
+    top:    60,
+    right:  15,
+    bottom: 50,
+    left:   60
   };
 
   // now we can calculate how much space we have to plot
@@ -52,13 +49,13 @@ var drawBarChart = function() {
 
   let countScale = d3.scaleLinear()
     .domain([countMin, countMax])
-    .range([plotHeight, 0])
-    .nice(); // rounds the domain a bit for nicer output
+    .rangeRound([plotHeight, 0])
+    .nice();
 
-  let letterScale = d3.scaleBand()
-    .domain(letters) // all letters (not using the count here)
-    .rangeRound([0, plotWidth])
-    .paddingInner(0.1); // space between bars
+  let timeScale = d3.scaleBand()
+    .domain(sortedPoints)
+    .range([0, plotWidth])
+    .paddingInner(5);
 
   let plot = svg.select("g#plot");
 
@@ -74,10 +71,8 @@ var drawBarChart = function() {
     plot.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
   }
 
-  // now lets draw our x- and y-axis
-  // these require our x (letter) and y (count) scales
-  let xAxis = d3.axisBottom(letterScale);
-  let yAxis = d3.axisRight(countScale);
+  let xAxis = d3.axisBottom(timeScale);
+  let yAxis = d3.axisLeft(countScale);
 
   // check if we have already drawn our axes
   if (plot.select("g#y-axis").size() < 1) {
@@ -93,7 +88,7 @@ var drawBarChart = function() {
     // do the same for our y axix
     let yGroup = plot.append("g").attr("id", "y-axis");
     yGroup.call(yAxis);
-    yGroup.attr("transform", "translate(" + plotWidth + ",0)");
+    yGroup.attr("transform", "translate(0,0)");
   }
   else {
     // we need to do this so our chart updates
@@ -101,69 +96,49 @@ var drawBarChart = function() {
     plot.select("g#y-axis").call(yAxis);
   }
 
-  // now how about some bars!
-  /*
-   * time to bind each data element to a rectangle in our visualization
-   * hence the name data-driven documents (d3)
-   */
-  let bars = plot.selectAll("rect")
-    .data(count.entries(), function(d) { return d.key; });
+  var gridlines = d3.axisLeft(countScale)
+    .tickFormat("")
+    .tickSize(-plotWidth);
 
-  // setting the "key" is important... this is how d3 will tell
-  // what is existing data, new data, or old data
+  plot.append("g")
+    .call(gridlines)
+    .attr("color", "#E2E2E2");
 
-  /*
-   * okay, this is where things get weird. d3 uses an enter, update,
-   * exit pattern for dealing with data. think of it as new data,
-   * existing data, and old data. for the first time, everything is new!
-   * http://bost.ocks.org/mike/join/
-   */
-  // we use the enter() selection to add new bars for new data
-  bars.enter().append("rect")
-    // we will style using css
-    .attr("class", "bar")
-    // the width of our bar is determined by our band scale
-    .attr("width", letterScale.bandwidth())
-    // we must now map our letter to an x pixel position
-    .attr("x", function(d) {
-      return letterScale(d.key);
-    })
-    // and do something similar for our y pixel position
-    .attr("y", function(d) {
-      return countScale(d.value);
-    })
-    // here it gets weird again, how do we set the bar height?
-    .attr("height", function(d) {
-      return plotHeight - countScale(d.value);
-    })
-    .each(function(d, i, nodes) {
-      console.log("Added bar for:", d.key);
-    });
+  var lineFunction = d3.line()
+    .x(function(d) { return timeScale(d.x); })
+    .y(function(d) { return countScale(d.y); });
 
-  // notice there will not be bars created for missing letters!
+  var lineGraph = plot.append("path")
+    .attr("d", lineFunction(dataPoints))
+    .attr("stroke", "#4751A5")
+    .attr("stroke-width", 2)
+    .attr("fill", "none");
 
-  // so what happens when we change the text?
-  // well our data changed, and there will be a new enter selection!
-  // only new letters will get new bars
+  svg.append("text")
+  // .attr("id", "graph-title")
+    .style("font-size", "25")
+    .attr("y", margin.top/2)
+    .attr("x", 10)
+    .style("text-anchor", "start")
+    .text("Number of Incidents by Hour");
 
-  // but we have to bind this draw function to textarea events
-  // (see index.html)
+  plot.append("text")
+    // .attr("id", "x-axis-title")
+    .style("font-size", "14")
+    .attr("transform",
+        "translate(" + (plotWidth/2) + " ,"
+        + (plotHeight + 40) + ")")
+    .style("text-anchor", "middle")
+    .text("Hour of Incident");
 
-  // for bars that already existed, we must use the update selection
-  // and then update their height accordingly
-  // we use transitions for this to avoid change blindness
-  bars.transition()
-    .attr("y", function(d) { return countScale(d.value); })
-    .attr("height", function(d) { return plotHeight - countScale(d.value); });
+  plot.append("text")
+    // .attr("id", "y-axis-title")
+    .style("font-size", "14")
+    .attr("transform", "rotate(-90)")
+    .attr("y", -margin.left + 8)
+    .attr("x", -(plotHeight/2))
+    .attr("dy", "1em")
+    .style("text-anchor", "middle")
+    .text("Number of Incidents");
 
-  // what about letters that disappeared?
-  // we use the exit selection for those to remove the bars
-  bars.exit()
-    .each(function(d, i, nodes) {
-      console.log("Removing bar for:", d.key);
-    })
-    .transition()
-    .attr("y", function(d) { return countScale(countMin); })
-    .attr("height", function(d) { return plotHeight - countScale(countMin); })
-    .remove();
 };

@@ -73,7 +73,8 @@ var drawScatterPlot = function(data) {
   }
 
   let xAxis = d3.axisBottom(numberScale);
-  let yAxis = d3.axisLeft(neighborhoodScale);
+  let yAxis = d3.axisLeft(neighborhoodScale)
+    .tickSize(0);
 
   // check if we have already drawn our axes
   if (plot.select("g#y-axis").size() < 1) {
