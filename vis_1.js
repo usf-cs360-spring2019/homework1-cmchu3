@@ -131,7 +131,6 @@ var drawScatterPlot = function(data) {
   plot.append("text")
     // .attr("id", "x-axis-title")
     .style("font-size", "14")
-    .style("font-weight", "bold")
     .attr("transform",
         "translate(" + (plotWidth/2) + " ,"
         + (plotHeight + 40) + ")")
@@ -141,7 +140,6 @@ var drawScatterPlot = function(data) {
   plot.append("text")
     // .attr("id", "y-axis-title")
     .style("font-size", "14")
-    .style("font-weight", "bold")
     .attr("y", -24)
     .attr("x", 0)
     .attr("dy", "1em")

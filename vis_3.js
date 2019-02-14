@@ -1,48 +1,91 @@
-/*
- * our massive function to draw a bar chart. note some stuff in here
- * is bonus material (for transitions and updating the text)
- */
-var drawBarChart = function() {
-  // get the data to visualize
-  let letters = "abcdefghijklmnopqrstuvwxyz".split("");
+
+var weekDays = [
+  "Sunday", "Monday", "Tuesday", "Wednesday",
+  "Thursday", "Friday", "Saturday"
+]
+
+var processData = function(data) {
   let count = d3.map();
 
-  for (letter in letters) {
-    count.set(letter, 2);
+  for (row in data) {
+    let category = data[row]["Incident Category"];
+    let weekday = data[row]["Incident Day of Week"];
+
+    if (weekday) {
+      if (count.has(weekday)) {
+        if (count.get(weekday).has(category)) {
+          count.get(weekday).set(category, count.get(weekday).get(category) + 1);
+
+        }
+        else {
+          count.get(weekday).set(category, 1);
+        }
+      }
+      else {
+        count.set(weekday, d3.map());
+        count.get(weekday).set(category, 1);
+      }
+    }
   }
 
-  // get the svg to draw on
+  return count;
+};
+
+var getTop5 = function(count) {
+  let top = d3.map();
+  let correctOrder = d3.map();
+
+  for (i in weekDays) {
+    let weekday = weekDays[i];
+    let weekCategories = count.get(weekday).entries().sort(
+      function(x,y) {
+        return d3.descending(x.value, y.value);
+      }
+    );
+    weekCategories = weekCategories.slice(0,5);
+    let catOrdered = [];
+    weekCategories.map(function(d, i) {
+      catOrdered.push(d.key);
+    });
+    correctOrder.set(weekday, catOrdered);
+    weekCategories.sort(
+      function(x,y) {
+        return d3.descending(x.key, y.key);
+      }
+    );
+    top.set(weekday, weekCategories);
+  }
+
+  return [top, correctOrder];
+};
+
+var drawStackedBarChart = function(data) {
+  let processed = processData(data);
+  let topCategories = getTop5(processed);
+  let indexOrder = topCategories[1];
+  topCategories = topCategories[0];
+
+  // Wednesday & Tuesday top 5 categories are wrong because spot 5 & 6 are the same value
+  // fixing it here
+  topCategories.get("Wednesday").splice(2,1);
+  topCategories.get("Wednesday").unshift({key: "Warrant", value: 78});
+  topCategories.get("Tuesday")[2] = topCategories.get("Tuesday")[3];
+  topCategories.get("Tuesday")[3] = {key: "Burglary", value: 74};
+
+  //also need to fix the indexOrder
+  indexOrder.get("Tuesday")[4] = "Burglary";
+  indexOrder.get("Wednesday")[4] = "Warrant";
+
   let svg = d3.select("body").select("svg");
-  console.log("SVGG");
-  console.log(svg.style("width"));
 
-  /*
-   * we will need to map our data domain to our svg range, which
-   * means we need to calculate the min and max of our data
-   */
+  let countMin = 0;
+  let countMax = 1200;
 
-  let countMin = 0; // always include 0 in a bar chart!
-  let countMax = d3.max(count.values());
-
-  // this catches the case where all the bars are removed, so there
-  // is no maximum value to compute
-  if (isNaN(countMax)) {
-    countMax = 0;
-  }
-
-  // console.log("count bounds:", [countMin, countMax]);
-
-  /*
-   * before we draw, we should decide what kind of margins we
-   * want. this will be the space around the core plot area,
-   * where the tick marks and axis labels will be placed
-   * http://bl.ocks.org/mbostock/3019563
-   */
   let margin = {
-    top:    15,
-    right:  35, // leave space for y-axis
-    bottom: 30, // leave space for x-axis
-    left:   10
+    top:    70,
+    right:  150,
+    bottom: 50,
+    left:   60
   };
 
   // now we can calculate how much space we have to plot
@@ -52,13 +95,14 @@ var drawBarChart = function() {
 
   let countScale = d3.scaleLinear()
     .domain([countMin, countMax])
-    .range([plotHeight, 0])
-    .nice(); // rounds the domain a bit for nicer output
+    .rangeRound([plotHeight, 0])
+    .nice();
 
-  let letterScale = d3.scaleBand()
-    .domain(letters) // all letters (not using the count here)
-    .rangeRound([0, plotWidth])
-    .paddingInner(0.1); // space between bars
+  let weekScale = d3.scaleBand()
+    .domain(weekDays)
+    .range([0, plotWidth])
+    .paddingInner(0.2)
+    .paddingOuter(.1);
 
   let plot = svg.select("g#plot");
 
@@ -74,10 +118,8 @@ var drawBarChart = function() {
     plot.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
   }
 
-  // now lets draw our x- and y-axis
-  // these require our x (letter) and y (count) scales
-  let xAxis = d3.axisBottom(letterScale);
-  let yAxis = d3.axisRight(countScale);
+  let xAxis = d3.axisBottom(weekScale);
+  let yAxis = d3.axisLeft(countScale).tickFormat(d3.format("d"));
 
   // check if we have already drawn our axes
   if (plot.select("g#y-axis").size() < 1) {
@@ -93,7 +135,7 @@ var drawBarChart = function() {
     // do the same for our y axix
     let yGroup = plot.append("g").attr("id", "y-axis");
     yGroup.call(yAxis);
-    yGroup.attr("transform", "translate(" + plotWidth + ",0)");
+    yGroup.attr("transform", "translate(0,0)");
   }
   else {
     // we need to do this so our chart updates
@@ -101,69 +143,160 @@ var drawBarChart = function() {
     plot.select("g#y-axis").call(yAxis);
   }
 
-  // now how about some bars!
-  /*
-   * time to bind each data element to a rectangle in our visualization
-   * hence the name data-driven documents (d3)
-   */
+  var gridlines = d3.axisLeft(countScale)
+    .tickFormat("")
+    .tickSize(-plotWidth);
+
+  plot.append("g")
+    .call(gridlines)
+    .attr("color", "#E2E2E2");
+
+  let colors = ["#4E79A7", "#F28E2B", "#E15759", "#76B7B2", "#59A14F", "#EDC948", "#B07AA1"];
+  let blackText = ["Burglary", "Malicious Mischief", "Other Miscellaneous"];
+
+  let colorsCategories = {};
+  colorsCategories["Assault"] = "#4E79A7";
+  colorsCategories["Burglary"] = "#F28E2B";
+  colorsCategories["Larceny Theft"] = "#E15759";
+  colorsCategories["Malicious Mischief"] = "#76B7B2";
+  colorsCategories["Non-Criminal"] = "#59A14F";
+  colorsCategories["Other Miscellaneous"] = "#EDC948";
+  colorsCategories["Warrant"] = "#B07AA1";
+
+  let barHeights = {};
+  let prevBarHeights = {};
+  for (i in weekDays) {
+    barHeights[weekDays[i]] = 0;
+    prevBarHeights[weekDays[i]] = 0;
+  }
+
   let bars = plot.selectAll("rect")
-    .data(count.entries(), function(d) { return d.key; });
+    .data(topCategories.entries(), function(d) { return d[d.key]; });
 
-  // setting the "key" is important... this is how d3 will tell
-  // what is existing data, new data, or old data
+  let index = 0;
+  while (index < 5) {
+    bars.enter().append("rect")
+      .style("fill", function(d) {
+        return colorsCategories[d.value[index].key];
+      })
+      .attr("width", weekScale.bandwidth())
+      .attr("x", function(d) {
+        return weekScale(d.key);
+      })
+      .attr("y", function(d) {
+        let rects = d.value;
+        let returnVal = countScale(rects[index].value + barHeights[d.key]);
+        prevBarHeights[d.key] = barHeights[d.key];
+        barHeights[d.key] += rects[index].value;
+        return returnVal;
+      })
+      .attr("height", function(d) {
+        let rects = d.value;
+        return plotHeight - countScale(rects[index].value) + 1;
+      });
+    bars.enter().append("text")
+      .attr("x", function(d) {
+        return weekScale(d.key) + (weekScale.bandwidth()/2);
+      })
+      .attr("y", function(d) {
+        return countScale(prevBarHeights[d.key] + (d.value[index].value)/2);
+      })
+      .style("font-size", 12)
+      .style("text-anchor", "middle")
+      .style("fill", function(d) {
+        if (blackText.includes(d.value[index].key))
+          { return "black"; }
+        else
+          { return "white"; }
+      })
+      .text(function(d) {
+        return d.value[index].key;
+      });
+    bars.enter().append("text")
+      .attr("x", function(d) {
+        return weekScale(d.key) + (weekScale.bandwidth()/2);
+      })
+      .attr("y", function(d) {
+        return countScale(prevBarHeights[d.key] + (d.value[index].value)/2);
+      })
+      .attr("dy", "1.1em")
+      .style("font-size", 12)
+      .style("text-anchor", "middle")
+      .style("fill", function(d) {
+        if (blackText.includes(d.value[index].key))
+          { return "black"; }
+        else
+          { return "white"; }
+      })
+      .text(function(d) {
+        return indexOrder.get(d.key).indexOf(d.value[index].key)+1;
+      });
+    index++;
+  }
 
-  /*
-   * okay, this is where things get weird. d3 uses an enter, update,
-   * exit pattern for dealing with data. think of it as new data,
-   * existing data, and old data. for the first time, everything is new!
-   * http://bost.ocks.org/mike/join/
-   */
-  // we use the enter() selection to add new bars for new data
-  bars.enter().append("rect")
-    // we will style using css
-    .attr("class", "bar")
-    // the width of our bar is determined by our band scale
-    .attr("width", letterScale.bandwidth())
-    // we must now map our letter to an x pixel position
-    .attr("x", function(d) {
-      return letterScale(d.key);
-    })
-    // and do something similar for our y pixel position
-    .attr("y", function(d) {
-      return countScale(d.value);
-    })
-    // here it gets weird again, how do we set the bar height?
-    .attr("height", function(d) {
-      return plotHeight - countScale(d.value);
-    })
-    .each(function(d, i, nodes) {
-      console.log("Added bar for:", d.key);
+  let legendTitle = plot.append("text")
+    .style("font-size", "12")
+    .style("text-anchor", "start")
+    .style("font-weight", "bold")
+    .attr("transform", "translate(" + (plotWidth + 12) + "," + -((margin.top/2) + 5) +  ")")
+    .text("Incident Category");
+
+  let legend = svg.selectAll(".legend")
+    .data(colors)
+    .enter().append("g")
+    .attr("class", "legend")
+    .attr("transform", function(d, i) { return "translate(30," + i * 19 + ")"; });
+
+  legend.append("rect")
+    .attr("x", plotWidth - 12)
+    .attr("width", 12)
+    .attr("height", 12)
+    .attr("transform", "translate(55,35)")
+    .style("fill", function(d, i) {return colors.slice()[i];});
+
+  legend.append("text")
+    .style("font-size", "12")
+    .style("text-anchor", "start")
+    .attr("x", plotWidth + 5)
+    .attr("y", 9)
+    .attr("transform", "translate(55,35)")
+    .text(function(d, i) {
+      switch (i) {
+        case 0: return "Assault";
+        case 1: return "Burglary";
+        case 2: return "Larceny Theft";
+        case 3: return "Malicious Mischief";
+        case 4: return "Non-Criminal";
+        case 5: return "Other Miscellaneous";
+        case 6: return "Warrant";
+      }
     });
 
-  // notice there will not be bars created for missing letters!
+  svg.append("text")
+  // .attr("id", "graph-title")
+    .style("font-size", "25")
+    .attr("y", margin.top/2)
+    .attr("x", 10)
+    .style("text-anchor", "start")
+    .text("Top 5 Incident Categories per Day of the Week");
 
-  // so what happens when we change the text?
-  // well our data changed, and there will be a new enter selection!
-  // only new letters will get new bars
+  plot.append("text")
+    // .attr("id", "x-axis-title")
+    .style("font-size", "14")
+    .attr("transform",
+        "translate(" + (plotWidth/2) + " ,"
+        + "-10)")
+    .style("text-anchor", "middle")
+    .text("Incident Day of Week");
 
-  // but we have to bind this draw function to textarea events
-  // (see index.html)
+  plot.append("text")
+    // .attr("id", "y-axis-title")
+    .style("font-size", "14")
+    .attr("transform", "rotate(-90)")
+    .attr("y", -margin.left + 8)
+    .attr("x", -(plotHeight/2))
+    .attr("dy", "1em")
+    .style("text-anchor", "middle")
+    .text("Number of Incidents");
 
-  // for bars that already existed, we must use the update selection
-  // and then update their height accordingly
-  // we use transitions for this to avoid change blindness
-  bars.transition()
-    .attr("y", function(d) { return countScale(d.value); })
-    .attr("height", function(d) { return plotHeight - countScale(d.value); });
-
-  // what about letters that disappeared?
-  // we use the exit selection for those to remove the bars
-  bars.exit()
-    .each(function(d, i, nodes) {
-      console.log("Removing bar for:", d.key);
-    })
-    .transition()
-    .attr("y", function(d) { return countScale(countMin); })
-    .attr("height", function(d) { return plotHeight - countScale(countMin); })
-    .remove();
 };

@@ -102,10 +102,12 @@
 
       <script src="vis_3.js"></script>
 
-      <svg width="100%" height="400" style="background-color: whitesmoke; border: 1px solid black;"></svg>
+      <svg width="100%" height="700" style="border: 1px solid black;"></svg>
 
       <script type="text/javascript">
-        drawBarChart();
+        d3.csv("./data/police_incidents.csv").then(function(data) {
+          drawStackedBarChart(data);
+        });
       </script>
 
       <h3>Interpretation</h3>
@@ -124,6 +126,8 @@
 
       <p>
         If appropriate, provide credit for the dataset, any code used, and design inspirations here. Unsufficient discussion here is a violation of the <a href="/syllabus.html#cheating-policy">academic honesty policy</a> and may result in an F grade for the assignment or the <em>entire</em> course.
+
+        >>http://bl.ocks.org/mstanaland/6100713
       </p>
     </div>
   </section>
