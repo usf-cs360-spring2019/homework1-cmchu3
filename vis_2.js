@@ -110,7 +110,7 @@ var drawScatterPlot = function(data) {
 
   var lineGraph = plot.append("path")
     .attr("d", lineFunction(dataPoints))
-    .attr("stroke", "#4751A5")
+    .attr("stroke", "#4E79A7")
     .attr("stroke-width", 2)
     .attr("fill", "none");
 

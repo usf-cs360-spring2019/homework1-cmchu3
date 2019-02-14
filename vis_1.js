@@ -118,7 +118,7 @@ var drawScatterPlot = function(data) {
 			return margin.top + neighborhoodScale(d[0]);
 		})
 		.attr("r", 2)
-		.attr("fill", "blue");
+		.attr("fill", "#4E79A7");
 
   svg.append("text")
     // .attr("id", "graph-title")
