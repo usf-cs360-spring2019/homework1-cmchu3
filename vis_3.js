@@ -83,8 +83,8 @@ var drawStackedBarChart = function(data) {
 
   let margin = {
     top:    70,
-    right:  145,
-    bottom: 50,
+    right:  125,
+    bottom: 30,
     left:   60
   };
 
@@ -132,7 +132,7 @@ var drawStackedBarChart = function(data) {
     // we need to translate/shift it down to the bottom
     xGroup.attr("transform", "translate(0," + plotHeight + ")");
     xGroup.selectAll("text")
-      .style("font-size", 9)
+      .style("font-size", 10)
       .attr("transform", "translate(0,5)");
 
     // do the same for our y axix
@@ -278,7 +278,7 @@ var drawStackedBarChart = function(data) {
 
   svg.append("text")
   // .attr("id", "graph-title")
-    .style("font-size", "23")
+    .style("font-size", "22")
     .attr("y", margin.top/2)
     .attr("x", 10)
     .style("text-anchor", "start")
@@ -286,7 +286,7 @@ var drawStackedBarChart = function(data) {
 
   plot.append("text")
     // .attr("id", "x-axis-title")
-    .style("font-size", "14")
+    .style("font-size", "12")
     .attr("transform",
         "translate(" + (plotWidth/2) + " ,"
         + "-10)")
@@ -295,7 +295,7 @@ var drawStackedBarChart = function(data) {
 
   plot.append("text")
     // .attr("id", "y-axis-title")
-    .style("font-size", "14")
+    .style("font-size", "12")
     .attr("transform", "rotate(-90)")
     .attr("y", -margin.left + 8)
     .attr("x", -(plotHeight/2))
