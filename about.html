@@ -11,6 +11,7 @@
   <!-- bulma 0.7.2 and font awesome v5.7.1 -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.7.2/css/bulma.min.css" integrity="sha256-2pUeJf+y0ltRPSbKOeJh09ipQFYxUdct5nTY6GAXswA=" crossorigin="anonymous" />
   <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.1/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+  <link href="style.css" rel="stylesheet" type="text/css">
 </head>
 
 <!-- body -->
@@ -94,90 +95,44 @@
     </div>
   </section>
 
-  <!-- separator between sections -->
-  <hr class="container">
-
-  <!-- grade section -->
+  <!-- about section -->
+  <!-- todo: can fill in, or link to an about page you use for all assignments -->
   <section class="section">
     <div class="container content">
-      <h2 id="grade">
-        Expected Grade
+      <h2 id="about">
+        About Me
       </h2>
 
-      <!-- todo: modify to indicate your expected grade -->
-      <table class="table is-hoverable">
-        <thead>
-          <tr>
-            <th>Done?</th>
-            <th>Letter</th>
-            <th>Justification</th>
-          </tr>
-        </thead>
+      <div class="media">
+        <div class="media-left">
+          <p class="image is-128x128">
+            <!-- todo: replace with your profile image -->
+            <img src="profile_pic.png">
+          </p>
+        </div>
 
-        <tbody>
-          <!-- d level functionality -->
-          <tr>
-            <td class="has-text-centered">
-              <i class="far fa-fw fa-check-circle has-text-success"></i>
-            </td>
+        <div class="media-content">
+            <p>
+              <!-- todo: replace with your information -->
+              <strong>Cristina Chu</strong>
+              <br/>
+              Computer Science Master's Student.
+              <br/>
+              <!-- find brand icons at: https://fontawesome.com/icons?d=gallery&s=brands&m=free -->
+              <a href="https://github.com/cmchu3">
+                <span class="fab fa-github"></span>
+                <span>Github</span>
+              </a>
+              &bullet;
+              <a href="https://www.linkedin.com/in/cristina-chu-a271bb82/">
+                <span class="fab fa-linkedin"></span>
+                <span>LinkedIn</span>
+              </a>
+            </p>
 
-            <td class="has-text-centered">
-              D
-            </td>
+        </div>
+      </div>
 
-            <td>
-              All three Tableau prototypes were done. Three different encodings were used. Different perspectives of the data were used for
-              each visualization. One visualization used color coding.
-            </td>
-          </tr>
-
-          <!-- c level functionality -->
-          <tr>
-            <td class="has-text-centered">
-              <i class="far fa-fw fa-check-circle has-text-success"></i>
-            </td>
-
-            <td class="has-text-centered">
-              C
-            </td>
-
-            <td>
-              Visualization #1 was implemented (scatterplot).
-            </td>
-          </tr>
-
-          <!-- b level functionality -->
-          <tr>
-            <td class="has-text-centered">
-              <i class="far fa-fw fa-times-circle has-text-success"></i>
-            </td>
-
-            <td class="has-text-centered">
-              B
-            </td>
-
-            <td>
-              Visualization #2 was implemented (line chart).
-            </td>
-          </tr>
-
-
-          <!-- a level functionality -->
-          <tr>
-            <td class="has-text-centered">
-              <i class="far fa-fw fa-times-circle has-text-success"></i>
-            </td>
-
-            <td class="has-text-centered">
-              A
-            </td>
-
-            <td>
-              Visualization #3 was implemented (stacked bars).
-            </td>
-          </tr>
-        <tbody>
-      </table>
     </div>
   </section>
 

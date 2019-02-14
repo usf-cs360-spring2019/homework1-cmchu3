@@ -82,7 +82,7 @@
               <span>Grade</span>
             </a>
 
-            <a class="navbar-item" href="#about">
+            <a class="navbar-item" href="./about.html">
               <span class="icon">
                 <i class="fas fa-info-circle"></i>
               </span>
@@ -102,7 +102,7 @@
 
       <script src="vis_2.js"></script>
 
-      <svg width="100%" height="600" style="border: 1px solid black;"></svg>
+      <svg width="960" height="500" style="border: 1px solid black;"></svg>
 
       <script type="text/javascript">
         d3.csv("./data/police_incidents.csv").then(function(data) {
@@ -113,67 +113,16 @@
       <h3>Interpretation</h3>
 
       <p>
-        If appropriate, provide a brief discussion of how to interpret this visualization (e.g. how the data is encoded) and how to interact with this visualization. Some of this discussion may not be necessary depending on the legends provided with the visualization.
-      </p>
-
-      <h3>Discussion</h3>
-
-      <p>
-        If appropriate, provide a brief discussion of the primary goal and findings of the visualization, any challenges encountered creating the visualization, and any other context as required by the assignment.
+        This visualization shows the total number of incidents that occurred during December 2018, grouped by the hour during which they occurred.
+        The x-axis shows the hours in 24-hour format.
       </p>
 
       <h3>Credit</h3>
 
       <p>
-        If appropriate, provide credit for the dataset, any code used, and design inspirations here. Unsufficient discussion here is a violation of the <a href="/syllabus.html#cheating-policy">academic honesty policy</a> and may result in an F grade for the assignment or the <em>entire</em> course.
-
-        >> https://bl.ocks.org/d3noob/23e42c8f67210ac6c678db2cd07a747e
-        >> https://www.dashingd3js.com/svg-paths-and-d3js
+        Below are the websites I looked at to understand how to create a line graph in D3 (apart from previous websites used in visualization #1):
+        <li><a href="https://www.dashingd3js.com/svg-paths-and-d3js">Making SVG paths tutorial</a></li>
       </p>
-    </div>
-  </section>
-
-  <!-- separator between sections -->
-  <hr class="container">
-
-  <!-- about section -->
-  <!-- todo: can fill in, or link to an about page you use for all assignments -->
-  <section class="section">
-    <div class="container content">
-      <h2 id="about">
-        About Me
-      </h2>
-
-      <div class="media">
-        <div class="media-left">
-          <p class="image is-128x128">
-            <!-- todo: replace with your profile image -->
-            <img src="profile_pic.png">
-          </p>
-        </div>
-
-        <div class="media-content">
-            <p>
-              <!-- todo: replace with your information -->
-              <strong>Cristina Chu</strong>
-              <br/>
-              Computer Science Master's Student.
-              <br/>
-              <!-- find brand icons at: https://fontawesome.com/icons?d=gallery&s=brands&m=free -->
-              <a href="https://github.com/cmchu3">
-                <span class="fab fa-github"></span>
-                <span>Github</span>
-              </a>
-              &bullet;
-              <a href="https://www.linkedin.com/in/cristina-chu-a271bb82/">
-                <span class="fab fa-linkedin"></span>
-                <span>LinkedIn</span>
-              </a>
-            </p>
-
-        </div>
-      </div>
-
     </div>
   </section>
 

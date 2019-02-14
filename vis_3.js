@@ -83,7 +83,7 @@ var drawStackedBarChart = function(data) {
 
   let margin = {
     top:    70,
-    right:  150,
+    right:  145,
     bottom: 50,
     left:   60
   };
@@ -101,8 +101,8 @@ var drawStackedBarChart = function(data) {
   let weekScale = d3.scaleBand()
     .domain(weekDays)
     .range([0, plotWidth])
-    .paddingInner(0.2)
-    .paddingOuter(.1);
+    .paddingInner(0.16)
+    .paddingOuter(.07);
 
   let plot = svg.select("g#plot");
 
@@ -118,7 +118,7 @@ var drawStackedBarChart = function(data) {
     plot.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
   }
 
-  let xAxis = d3.axisBottom(weekScale);
+  let xAxis = d3.axisBottom(weekScale).tickSize(0);
   let yAxis = d3.axisLeft(countScale).tickFormat(d3.format("d"));
 
   // check if we have already drawn our axes
@@ -131,11 +131,15 @@ var drawStackedBarChart = function(data) {
     // notice it is at the top of our svg
     // we need to translate/shift it down to the bottom
     xGroup.attr("transform", "translate(0," + plotHeight + ")");
+    xGroup.selectAll("text")
+      .style("font-size", 9)
+      .attr("transform", "translate(0,5)");
 
     // do the same for our y axix
     let yGroup = plot.append("g").attr("id", "y-axis");
     yGroup.call(yAxis);
     yGroup.attr("transform", "translate(0,0)");
+    yGroup.selectAll("text").style("font-size", 9);;
   }
   else {
     // we need to do this so our chart updates
@@ -201,7 +205,7 @@ var drawStackedBarChart = function(data) {
       .attr("y", function(d) {
         return countScale(prevBarHeights[d.key] + (d.value[index].value)/2);
       })
-      .style("font-size", 12)
+      .style("font-size", 10)
       .style("text-anchor", "middle")
       .style("fill", function(d) {
         if (blackText.includes(d.value[index].key))
@@ -220,7 +224,7 @@ var drawStackedBarChart = function(data) {
         return countScale(prevBarHeights[d.key] + (d.value[index].value)/2);
       })
       .attr("dy", "1.1em")
-      .style("font-size", 12)
+      .style("font-size", 10)
       .style("text-anchor", "middle")
       .style("fill", function(d) {
         if (blackText.includes(d.value[index].key))
@@ -235,27 +239,27 @@ var drawStackedBarChart = function(data) {
   }
 
   let legendTitle = plot.append("text")
-    .style("font-size", "12")
+    .style("font-size", "10")
     .style("text-anchor", "start")
     .style("font-weight", "bold")
-    .attr("transform", "translate(" + (plotWidth + 12) + "," + -((margin.top/2) + 5) +  ")")
+    .attr("transform", "translate(" + (plotWidth + 13) + "," + -((margin.top/2) + 5) +  ")")
     .text("Incident Category");
 
   let legend = svg.selectAll(".legend")
     .data(colors)
     .enter().append("g")
     .attr("class", "legend")
-    .attr("transform", function(d, i) { return "translate(30," + i * 19 + ")"; });
+    .attr("transform", function(d, i) { return "translate(30," + i * 13 + ")"; });
 
   legend.append("rect")
-    .attr("x", plotWidth - 12)
-    .attr("width", 12)
-    .attr("height", 12)
+    .attr("x", plotWidth - 10)
+    .attr("width", 10)
+    .attr("height", 10)
     .attr("transform", "translate(55,35)")
     .style("fill", function(d, i) {return colors.slice()[i];});
 
   legend.append("text")
-    .style("font-size", "12")
+    .style("font-size", "10")
     .style("text-anchor", "start")
     .attr("x", plotWidth + 5)
     .attr("y", 9)
@@ -274,7 +278,7 @@ var drawStackedBarChart = function(data) {
 
   svg.append("text")
   // .attr("id", "graph-title")
-    .style("font-size", "25")
+    .style("font-size", "23")
     .attr("y", margin.top/2)
     .attr("x", 10)
     .style("text-anchor", "start")

@@ -28,10 +28,10 @@ var drawScatterPlot = function(data) {
   let countMax = d3.max(processed.values());
 
   let margin = {
-    top:    70,
-    right:  15, // leave space for y-axis
-    bottom: 50, // leave space for x-axis
-    left:   180
+    top:    55,
+    right:  10, // leave space for y-axis
+    bottom: 40, // leave space for x-axis
+    left:   130
   };
 
   // now we can calculate how much space we have to plot
@@ -72,7 +72,8 @@ var drawScatterPlot = function(data) {
     plot.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
   }
 
-  let xAxis = d3.axisBottom(numberScale);
+  let xAxis = d3.axisBottom(numberScale).tickFormat(d3.format("d"))
+    .tickSize(0);
   let yAxis = d3.axisLeft(neighborhoodScale)
     .tickSize(0);
 
@@ -85,12 +86,16 @@ var drawScatterPlot = function(data) {
 
     // notice it is at the top of our svg
     // we need to translate/shift it down to the bottom
-    xGroup.attr("transform", "translate(0," + plotHeight + ")");
+    xGroup.attr("transform", "translate(0," + plotHeight + ")")
+    xGroup.selectAll("text")
+      .style("font-size", 9)
+      .attr("transform", "translate(0,3)");
 
     // do the same for our y axix
     let yGroup = plot.append("g").attr("id", "y-axis");
     yGroup.call(yAxis);
-    yGroup.attr("transform", "translate(0,0)");
+    yGroup.attr("transform", "translate(0,0)")
+    yGroup.selectAll("text").style("font-size", 9);;
   }
   else {
     // we need to do this so our chart updates
@@ -122,25 +127,25 @@ var drawScatterPlot = function(data) {
 
   svg.append("text")
     // .attr("id", "graph-title")
-    .style("font-size", "25")
-    .attr("y", margin.top/2)
+    .style("font-size", "20")
+    .attr("y", margin.top/2 - 3)
     .attr("x", 10)
     .style("text-anchor", "start")
     .text("Neighborhoods by Number of Incidents");
 
   plot.append("text")
     // .attr("id", "x-axis-title")
-    .style("font-size", "14")
+    .style("font-size", "10")
     .attr("transform",
         "translate(" + (plotWidth/2) + " ,"
-        + (plotHeight + 40) + ")")
+        + (plotHeight + 32) + ")")
     .style("text-anchor", "middle")
     .text("Total Number of Incidents");
 
   plot.append("text")
     // .attr("id", "y-axis-title")
-    .style("font-size", "14")
-    .attr("y", -24)
+    .style("font-size", "10")
+    .attr("y", -20)
     .attr("x", 0)
     .attr("dy", "1em")
     .style("text-anchor", "end")
